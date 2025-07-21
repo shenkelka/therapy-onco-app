@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(30, 25%, 95%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(30, 15%, 90%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(267, 57%, 50%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(30, 15%, 90%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(30, 15%, 90%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 1rem;
+  
+  /* Custom therapy app colors matching exact design */
+  --warm-beige: hsl(25, 20%, 92%);
+  --soft-mint: hsl(160, 25%, 88%);
+  --soft-yellow: hsl(50, 45%, 82%);
+  --soft-blue: hsl(220, 35%, 88%);
+  --soft-pink: hsl(350, 35%, 88%);
+  --soft-purple: hsl(260, 35%, 88%);
+  --soft-orange: hsl(30, 45%, 82%);
+  --soft-green: hsl(140, 25%, 85%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(267, 57%, 50%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-['Montserrat',sans-serif] antialiased text-foreground;
+    background-color: var(--warm-beige);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-medium;
+  }
+}
+
+@layer utilities {
+  .bg-warm-beige {
+    background-color: var(--warm-beige);
+  }
+  .bg-soft-mint {
+    background-color: var(--soft-mint);
+  }
+  .bg-soft-yellow {
+    background-color: var(--soft-yellow);
+  }
+  .bg-soft-blue {
+    background-color: var(--soft-blue);
+  }
+  .bg-soft-pink {
+    background-color: var(--soft-pink);
+  }
+  .bg-soft-purple {
+    background-color: var(--soft-purple);
+  }
+  .bg-soft-orange {
+    background-color: var(--soft-orange);
+  }
+  .bg-soft-green {
+    background-color: var(--soft-green);
+  }
+  
+  .text-warm-gray {
+    color: hsl(25, 5.3%, 44.7%);
+  }
+  
+  .shadow-soft {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+}

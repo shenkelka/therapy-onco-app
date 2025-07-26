@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a comprehensive therapy journal and mutual help platform built as a mobile-first web application. The app helps cancer patients track their treatment progress, manage side effects, and connect with others for mutual support. It features a modern, compassionate design with warm colors and a supportive interface.
+This is a comprehensive therapy journal and mutual help platform built as a mobile-first web application for cancer patients. The app helps users track their treatment progress, manage side effects, record mood and wellbeing, and connect with other patients for mutual support. It features a clean, empathetic design with personalized recommendations and supportive messaging.
 
 ## User Preferences
 
@@ -11,103 +11,124 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### Frontend Architecture
-- **Framework**: React with TypeScript
-- **Routing**: Wouter for lightweight client-side routing
-- **State Management**: TanStack Query (React Query) for server state management
-- **UI Framework**: Shadcn/ui components built on Radix UI primitives
-- **Styling**: Tailwind CSS with custom therapy-focused color palette
+- **Framework**: React with TypeScript for type safety and modern development
+- **Routing**: Wouter for lightweight client-side routing (alternative to React Router)
+- **State Management**: TanStack Query (React Query) for server state management and caching
+- **UI Framework**: Shadcn/ui components built on Radix UI primitives for accessibility
+- **Styling**: Tailwind CSS with custom therapy-focused color palette and mobile-first design
 - **Build Tool**: Vite for fast development and optimized production builds
+- **Forms**: React Hook Form with Zod validation for type-safe form handling
 
 ### Backend Architecture
 - **Runtime**: Node.js with Express server
-- **Language**: TypeScript
-- **Database ORM**: Drizzle ORM with PostgreSQL dialect
-- **Database Provider**: Neon Database (serverless PostgreSQL)
+- **Language**: TypeScript for consistency with frontend
+- **Database ORM**: Drizzle ORM configured for PostgreSQL dialect
+- **Database Provider**: Neon Database (serverless PostgreSQL) via @neondatabase/serverless
 - **API Design**: RESTful endpoints with JSON responses
+- **Data Storage**: In-memory storage implementation for development (MemStorage class)
 - **Development**: Hot module replacement with Vite middleware integration
 
-### Mobile-First Design
+### Mobile-First Design Philosophy
 - **Responsive**: Optimized for mobile devices with max-width container
 - **Touch-Friendly**: Large touch targets and gesture-friendly interactions
-- **Progressive**: Works as a web app with potential for PWA features
+- **Bottom Navigation**: Mobile-native navigation pattern
+- **Therapy-Focused Colors**: Warm, calming color palette with soft pastels
 
 ## Key Components
 
+### Core Application Structure
+- **Layout System**: Shared layout component with bottom navigation
+- **Routing**: Three main pages (Home, Therapy Diary, Mutual Help)
+- **Error Handling**: Custom 404 page and error boundaries
+- **Toast Notifications**: User feedback system for actions
+
 ### User Interface Components
-- **Layout System**: Mobile-first layout with bottom navigation
-- **Form Components**: React Hook Form with Zod validation
-- **UI Library**: Complete set of accessible components (buttons, forms, dialogs, etc.)
-- **Mood Tracking**: Interactive emoji-based mood selection
+- **Form Components**: Therapy entry form, help request form with validation
+- **Interactive Elements**: Mood selector with emoji-based selection
+- **Data Display**: Therapy entry cards, help request cards with status badges
+- **Navigation**: Bottom tab navigation optimized for mobile use
 - **Supportive Messaging**: Dynamic encouragement based on treatment type and side effects
 
-### Data Models
-- **Users**: Basic user profiles with demographics
-- **Therapy Entries**: Detailed treatment tracking with cycles, medications, and side effects
-- **Help Requests**: Community support system for practical assistance
-- **Help Responses**: Response system for offering help
-
-### Core Features
-- **Therapy Diary**: Track daily treatment progress, side effects, and mood
-- **Mutual Help**: Community platform for requesting and offering assistance
-- **Progress Visualization**: Treatment cycle tracking and wellbeing monitoring
+### Data Models and Schema
+- **Users**: Basic user profiles with demographics (id, username, name, age, location)
+- **Therapy Entries**: Comprehensive treatment tracking including:
+  - Treatment cycles and medications
+  - Wellbeing severity (1-5 scale)
+  - Side effects array
+  - Physical activity levels
+  - Mood tracking with emoji
+- **Help Requests**: Community support system with categorized help types
+- **Help Responses**: Response mechanism for offering assistance
 
 ## Data Flow
 
 ### Client-Server Communication
-- **Query Management**: TanStack Query handles caching, background updates, and error states
-- **API Integration**: Custom `apiRequest` function for consistent HTTP handling
-- **Form Submission**: React Hook Form with Zod schema validation
-- **Real-time Updates**: Optimistic updates with query invalidation
+- **API Layer**: RESTful endpoints for all data operations
+- **Query Management**: TanStack Query handles caching, synchronization, and background updates
+- **Form Submission**: React Hook Form with Zod validation before API calls
+- **Real-time Updates**: Query invalidation for immediate UI updates after mutations
 
-### Data Validation
-- **Schema Definition**: Shared Zod schemas between client and server
-- **Type Safety**: Full TypeScript coverage from database to UI
-- **Input Validation**: Client-side validation with server-side verification
-
-### State Management
-- **Server State**: TanStack Query for API data
-- **Form State**: React Hook Form for complex form management
-- **UI State**: React hooks for local component state
-- **Toast Notifications**: Custom toast system for user feedback
+### State Management Strategy
+- **Server State**: Managed by TanStack Query with automatic caching
+- **Form State**: React Hook Form for complex form handling
+- **UI State**: React state hooks for component-level state
+- **Global State**: Minimal global state, preferring server state synchronization
 
 ## External Dependencies
 
-### Database and Storage
-- **Primary Database**: Neon Database (serverless PostgreSQL)
-- **ORM**: Drizzle ORM for type-safe database operations
-- **Migration System**: Drizzle Kit for schema management
-
 ### UI and Styling
-- **Component Library**: Radix UI primitives for accessibility
-- **Styling**: Tailwind CSS with custom design tokens
-- **Icons**: Lucide React for consistent iconography
-- **Fonts**: Montserrat font family from Google Fonts
+- **Radix UI**: Accessible component primitives (@radix-ui/react-*)
+- **Tailwind CSS**: Utility-first CSS framework with PostCSS
+- **Lucide React**: Icon library for consistent iconography
+- **Class Variance Authority**: Type-safe variant handling for components
 
-### Development Tools
-- **Build System**: Vite with React plugin
-- **Runtime Error Handling**: Replit error overlay for development
-- **Code Organization**: Path aliases for clean imports
+### Development and Build
+- **TypeScript**: Static typing across frontend and backend
+- **Vite**: Build tool with hot module replacement
+- **ESBuild**: Fast bundling for production builds
+- **Replit Integration**: Development environment plugins
+
+### Backend Dependencies
+- **Express**: Web framework for Node.js
+- **Drizzle ORM**: Type-safe database toolkit
+- **Zod**: Schema validation library
+- **Date-fns**: Date utility library
 
 ## Deployment Strategy
 
 ### Development Environment
-- **Hot Reloading**: Vite dev server with Express middleware
-- **Database**: Neon Database with development connection
-- **Error Handling**: Development-specific error overlays
+- **Replit-Optimized**: Custom Vite configuration for Replit environment
+- **Hot Reloading**: Vite middleware integration with Express server
+- **TypeScript**: Shared configuration across client and server
 
 ### Production Build
-- **Client**: Vite builds optimized React bundle
-- **Server**: ESBuild compiles Express server for Node.js
-- **Assets**: Static assets served from dist/public directory
-- **Environment**: Production configuration with proper error handling
+- **Static Frontend**: Vite builds to `dist/public` directory
+- **Server Bundle**: ESBuild bundles server to `dist/index.js`
+- **Environment Variables**: Database URL configuration via environment
+- **Deployment Targets**: Vercel (recommended) or Netlify with automatic detection
 
-### Database Management
-- **Schema Deployment**: `drizzle-kit push` for schema updates
-- **Environment Variables**: DATABASE_URL for connection string
-- **Migration Strategy**: Schema-first approach with Drizzle migrations
+### Database Configuration
+- **Development**: In-memory storage for rapid prototyping
+- **Production**: PostgreSQL via Neon Database with connection pooling
+- **Migrations**: Drizzle Kit for schema management
+- **Schema**: Shared between client and server via TypeScript imports
 
-### Performance Considerations
-- **Bundle Optimization**: Tree shaking and code splitting with Vite
-- **Query Caching**: Infinite cache time with manual invalidation
-- **Responsive Images**: Optimized for mobile-first approach
-- **Component Lazy Loading**: Dynamic imports for code splitting
+## Technical Decisions
+
+### Framework Choices
+- **React over Vue/Angular**: Mature ecosystem and team familiarity
+- **Wouter over React Router**: Smaller bundle size for mobile-first approach
+- **TanStack Query**: Superior caching and synchronization for data-heavy app
+- **Drizzle over Prisma**: Better TypeScript integration and performance
+
+### Architecture Patterns
+- **Monorepo Structure**: Shared schemas and types between client/server
+- **Mobile-First**: Progressive enhancement from mobile to desktop
+- **Component Composition**: Radix UI primitives with custom styling
+- **Type Safety**: End-to-end TypeScript for better developer experience
+
+### Performance Optimizations
+- **Code Splitting**: Dynamic imports for route-based splitting
+- **Image Optimization**: Lazy loading and responsive images
+- **Caching Strategy**: Aggressive caching with TanStack Query
+- **Bundle Size**: Careful dependency selection for mobile performance

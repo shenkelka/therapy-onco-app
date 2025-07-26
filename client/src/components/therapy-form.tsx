@@ -10,14 +10,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X } from "lucide-react";
+import { X, Clock, Activity, Target, Shield, Dna, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertTherapyEntrySchema } from "@shared/schema";
 import SupportiveMessage from "./supportive-message";
+import { notificationService } from "@/lib/notifications";
 
 const formSchema = insertTherapyEntrySchema.extend({
   sideEffects: z.array(z.string()).default([]),
+  physicalActivityType: z.string().optional(),
+  comments: z.string().optional(),
+  reminder: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -29,6 +33,7 @@ interface TherapyFormProps {
 export default function TherapyForm({ onSuccess }: TherapyFormProps) {
   const [selectedWellbeing, setSelectedWellbeing] = useState<number | null>(null);
   const [sideEffects, setSideEffects] = useState<string[]>([]);
+  const [customMedication, setCustomMedication] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -36,13 +41,16 @@ export default function TherapyForm({ onSuccess }: TherapyFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       date: new Date().toISOString().split('T')[0],
-      cycle: 1,
-      cycleDay: 1,
+      cycle: undefined,
+      cycleDay: undefined,
       treatmentType: "",
       medications: "",
       wellbeingSeverity: 3,
       sideEffects: [],
       physicalActivity: "",
+      physicalActivityType: "",
+      comments: "",
+      reminder: "",
       mood: "😊",
     },
   });
@@ -51,12 +59,48 @@ export default function TherapyForm({ onSuccess }: TherapyFormProps) {
     mutationFn: async (data: FormData) => {
       return await apiRequest("POST", "/api/therapy-entries", data);
     },
-    onSuccess: () => {
+    onSuccess: async (_, data) => {
       toast({
         title: "Запись сохранена!",
         description: "Ваша запись о терапии успешно добавлена",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/therapy-entries"] });
+
+      // Schedule notifications based on therapy entry
+      try {
+        // Send supportive message
+        if (data.sideEffects && data.sideEffects.length > 0) {
+          await notificationService.sendSupportiveMessage(
+            "Помните: побочные эффекты временны, а ваша сила - постоянна. Каждый день лечения приближает к выздоровлению.",
+            data.treatmentType,
+            data.sideEffects
+          );
+        }
+
+        // Schedule medication reminder if reminder text is provided
+        if (data.reminder && data.medications) {
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          await notificationService.scheduleMedicationReminder(
+            data.medications,
+            tomorrow.toISOString(),
+            data.reminder
+          );
+        }
+
+        // Suggest activity if none reported
+        if (data.physicalActivity === 'none') {
+          setTimeout(async () => {
+            await notificationService.suggestActivity(
+              "Легкая 10-минутная прогулка",
+              "Даже небольшая активность может улучшить самочувствие"
+            );
+          }, 5000); // 5 seconds delay
+        }
+      } catch (error) {
+        console.warn('Failed to schedule notifications:', error);
+      }
+
       onSuccess();
     },
     onError: () => {
@@ -91,6 +135,7 @@ export default function TherapyForm({ onSuccess }: TherapyFormProps) {
 
   const watchTreatmentType = form.watch('treatmentType');
   const watchSideEffects = form.watch('sideEffects');
+  const watchPhysicalActivity = form.watch('physicalActivity');
 
   return (
     <div className="bg-white rounded-t-3xl w-full">
@@ -108,154 +153,244 @@ export default function TherapyForm({ onSuccess }: TherapyFormProps) {
         </div>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Date and Cycle */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label className="text-sm font-medium text-gray-700">Дата</Label>
-              <Input
-                type="date"
-                {...form.register('date')}
-                className="mt-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-700">Цикл</Label>
-              <Input
-                type="number"
-                min="1"
-                {...form.register('cycle', { valueAsNumber: true })}
-                className="mt-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {/* Day of Cycle */}
+          {/* 1. Дата */}
           <div>
-            <Label className="text-sm font-medium text-gray-700">День цикла</Label>
+            <Label className="text-sm font-medium text-gray-700">Дата</Label>
             <Input
-              type="number"
-              min="1"
-              max="21"
-              placeholder="1-21"
-              {...form.register('cycleDay', { valueAsNumber: true })}
+              type="date"
+              {...form.register('date')}
               className="mt-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
 
-          {/* Treatment Type */}
+          {/* 2. Вид терапии */}
           <div>
-            <Label className="text-sm font-medium text-gray-700">Тип лечения</Label>
-            <div className="grid grid-cols-2 gap-2 mt-2">
+            <Label className="text-sm font-medium text-gray-700">Вид терапии</Label>
+            <div className="grid grid-cols-2 gap-3 mt-2">
               {[
-                { value: "chemotherapy", label: "Химиотерапия" },
-                { value: "targeted", label: "Таргетная" },
-                { value: "immunotherapy", label: "Иммунотерапия" },
-                { value: "radiation", label: "Лучевая" },
-              ].map((treatment) => (
-                <label key={treatment.value} className="flex items-center p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="radio"
-                    value={treatment.value}
-                    {...form.register('treatmentType')}
-                    className="mr-2"
-                  />
-                  <span className="text-sm">{treatment.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Medications */}
-          <div>
-            <Label className="text-sm font-medium text-gray-700">Препараты</Label>
-            <Textarea
-              placeholder="Укажите препараты..."
-              {...form.register('medications')}
-              className="mt-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent h-24 resize-none"
-            />
-          </div>
-
-          {/* Wellbeing Scale */}
-          <div>
-            <Label className="text-sm font-medium text-gray-700">Тяжесть самочувствия (1-5)</Label>
-            <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl mt-2">
-              <span className="text-sm text-gray-500">Отлично</span>
-              <div className="flex space-x-2">
-                {[1, 2, 3, 4, 5].map((rating) => (
-                  <Button
-                    key={rating}
-                    type="button"
-                    onClick={() => handleWellbeingSelect(rating)}
-                    className={`w-10 h-10 rounded-full transition-colors ${
-                      selectedWellbeing === rating ? "ring-2 ring-purple-500" : ""
-                    } ${
-                      rating === 1 ? "bg-green-200 hover:bg-green-300" :
-                      rating === 2 ? "bg-yellow-200 hover:bg-yellow-300" :
-                      rating === 3 ? "bg-orange-200 hover:bg-orange-300" :
-                      rating === 4 ? "bg-red-200 hover:bg-red-300" :
-                      "bg-red-300 hover:bg-red-400"
+                { value: "chemotherapy", label: "Химиотерапия", icon: Activity, color: "bg-blue-50 hover:bg-blue-100 border-blue-200" },
+                { value: "targeted", label: "Таргетная", icon: Target, color: "bg-green-50 hover:bg-green-100 border-green-200" },
+                { value: "immunotherapy", label: "Иммунотерапия", icon: Shield, color: "bg-purple-50 hover:bg-purple-100 border-purple-200" },
+                { value: "hormonal", label: "Гормональная", icon: Dna, color: "bg-pink-50 hover:bg-pink-100 border-pink-200" },
+                { value: "radiation", label: "Лучевая", icon: Zap, color: "bg-orange-50 hover:bg-orange-100 border-orange-200" },
+              ].map((treatment) => {
+                const Icon = treatment.icon;
+                const isSelected = form.watch('treatmentType') === treatment.value;
+                return (
+                  <label 
+                    key={treatment.value} 
+                    className={`flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                      isSelected 
+                        ? treatment.color.replace('hover:', '') + ' ring-2 ring-purple-500' 
+                        : treatment.color
                     }`}
                   >
-                    {rating}
-                  </Button>
-                ))}
-              </div>
-              <span className="text-sm text-gray-500">Плохо</span>
+                    <input
+                      type="radio"
+                      value={treatment.value}
+                      {...form.register('treatmentType')}
+                      className="sr-only"
+                    />
+                    <Icon className="w-6 h-6 mb-2 text-gray-600" />
+                    <span className="text-sm font-medium text-center">{treatment.label}</span>
+                  </label>
+                );
+              })}
             </div>
           </div>
 
-          {/* Side Effects */}
-          <div>
-            <Label className="text-sm font-medium text-gray-700">Побочные эффекты</Label>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              {[
-                "Тошнота",
-                "Усталость",
-                "Выпадение волос",
-                "Боль",
-                "Диарея",
-                "Рвота",
-                "Аппетит",
-                "Слабость"
-              ].map((effect) => (
-                <label key={effect} className="flex items-center p-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                  <Checkbox
-                    checked={sideEffects.includes(effect)}
-                    onCheckedChange={(checked) => handleSideEffectChange(effect, !!checked)}
-                    className="mr-2"
+          {/* 3. Условные поля для стандартных терапий */}
+          {watchTreatmentType && watchTreatmentType !== "" && (
+            <>
+              {/* Цикл и День цикла */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Цикл</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="1"
+                    {...form.register('cycle', { valueAsNumber: true })}
+                    className="mt-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
-                  <span className="text-sm">{effect}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">День цикла</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="21"
+                    placeholder="1-21"
+                    {...form.register('cycleDay', { valueAsNumber: true })}
+                    className="mt-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
 
-          {/* Physical Activity */}
-          <div>
-            <Label className="text-sm font-medium text-gray-700">Физическая активность</Label>
-            <Select onValueChange={(value) => form.setValue('physicalActivity', value)}>
-              <SelectTrigger className="mt-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                <SelectValue placeholder="Выберите уровень активности" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Без активности</SelectItem>
-                <SelectItem value="light">Легкая прогулка</SelectItem>
-                <SelectItem value="moderate">Умеренная активность</SelectItem>
-                <SelectItem value="intense">Интенсивные упражнения</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+              {/* Препараты */}
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Препараты</Label>
+                <Select onValueChange={(value) => {
+                  if (value === "custom") {
+                    setCustomMedication(true);
+                    form.setValue('medications', '');
+                  } else {
+                    setCustomMedication(false);
+                    form.setValue('medications', value);
+                  }
+                }}>
+                  <SelectTrigger className="mt-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <SelectValue placeholder="Выберите препарат" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Доксорубицин">Доксорубицин</SelectItem>
+                    <SelectItem value="Циклофосфамид">Циклофосфамид</SelectItem>
+                    <SelectItem value="Паклитаксел">Паклитаксел</SelectItem>
+                    <SelectItem value="Карбоплатин">Карбоплатин</SelectItem>
+                    <SelectItem value="Герцептин">Герцептин</SelectItem>
+                    <SelectItem value="Пертузумаб">Пертузумаб</SelectItem>
+                    <SelectItem value="Тамоксифен">Тамоксифен</SelectItem>
+                    <SelectItem value="Летрозол">Летрозол</SelectItem>
+                    <SelectItem value="custom">Свой вариант</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                {customMedication && (
+                  <Input
+                    placeholder="Введите название препарата..."
+                    {...form.register('medications')}
+                    className="mt-3 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                )}
+              </div>
 
-          {/* Supportive Message */}
+              {/* Самочувствие */}
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Самочувствие от 1 до 5</Label>
+                <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl mt-2">
+                  <span className="text-sm text-gray-500">Отлично</span>
+                  <div className="flex space-x-2">
+                    {[1, 2, 3, 4, 5].map((rating) => (
+                      <Button
+                        key={rating}
+                        type="button"
+                        onClick={() => handleWellbeingSelect(rating)}
+                        className={`w-10 h-10 rounded-full transition-colors ${
+                          selectedWellbeing === rating ? "ring-2 ring-purple-500" : ""
+                        } ${
+                          rating === 1 ? "bg-green-200 hover:bg-green-300" :
+                          rating === 2 ? "bg-yellow-200 hover:bg-yellow-300" :
+                          rating === 3 ? "bg-orange-200 hover:bg-orange-300" :
+                          rating === 4 ? "bg-red-200 hover:bg-red-300" :
+                          "bg-red-300 hover:bg-red-400"
+                        }`}
+                      >
+                        {rating}
+                      </Button>
+                    ))}
+                  </div>
+                  <span className="text-sm text-gray-500">Плохо</span>
+                </div>
+              </div>
+
+              {/* Побочные эффекты */}
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Побочные эффекты</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {[
+                    "Тошнота",
+                    "Усталость", 
+                    "Выпадение волос",
+                    "Боль",
+                    "Диарея",
+                    "Рвота",
+                    "Потеря аппетита",
+                    "Слабость"
+                  ].map((effect) => (
+                    <label key={effect} className="flex items-center p-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                      <Checkbox
+                        checked={sideEffects.includes(effect)}
+                        onCheckedChange={(checked) => handleSideEffectChange(effect, !!checked)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{effect}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Комментарий */}
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Комментарий (опишите ваше самочувствие и какие вспомогательные препараты принимаете)</Label>
+                <Textarea
+                  placeholder="Опишите ваше самочувствие, дополнительные препараты..."
+                  {...form.register('comments')}
+                  className="mt-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent h-24 resize-none"
+                />
+              </div>
+
+              {/* Физическая активность */}
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Уровень физической активности</Label>
+                <Select onValueChange={(value) => form.setValue('physicalActivity', value)}>
+                  <SelectTrigger className="mt-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <SelectValue placeholder="Выберите уровень активности" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Нет</SelectItem>
+                    <SelectItem value="moderate">Умеренная</SelectItem>
+                    <SelectItem value="high">Высокая</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Тип активности (если выбрана умеренная или высокая) */}
+              {(watchPhysicalActivity === 'moderate' || watchPhysicalActivity === 'high') && (
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Какая активность?</Label>
+                  <Select onValueChange={(value) => form.setValue('physicalActivityType', value)}>
+                    <SelectTrigger className="mt-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                      <SelectValue placeholder="Выберите тип активности" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="walking">Прогулка</SelectItem>
+                      <SelectItem value="running">Бег</SelectItem>
+                      <SelectItem value="cycling">Велосипед</SelectItem>
+                      <SelectItem value="gym">Занятие в спортзале</SelectItem>
+                      <SelectItem value="swimming">Плавание</SelectItem>
+                      <SelectItem value="other">Другое</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Напоминание для гормональной терапии */}
+              {watchTreatmentType === 'hormonal' && (
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">
+                    <Clock className="w-4 h-4 inline mr-2" />
+                    Установить напоминание
+                  </Label>
+                  <Textarea
+                    placeholder="Когда принимать следующую таблетку или ставить укол..."
+                    {...form.register('reminder')}
+                    className="mt-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent h-20 resize-none"
+                  />
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Поддерживающие фразы */}
           <SupportiveMessage 
             treatmentType={watchTreatmentType} 
             sideEffects={watchSideEffects}
           />
 
-          {/* Submit Button */}
+          {/* Кнопка отправки */}
           <Button
             type="submit"
-            disabled={createEntryMutation.isPending}
+            disabled={createEntryMutation.isPending || !watchTreatmentType}
             className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-4 rounded-xl"
           >
             {createEntryMutation.isPending ? "Сохраняется..." : "Сохранить запись"}

@@ -5,11 +5,15 @@ import TherapyForm from "@/components/therapy-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Calendar, Award } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Plus, Calendar, Award, Edit } from "lucide-react";
 import { Link } from "wouter";
 
 export default function TherapyDiary() {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [filterDate, setFilterDate] = useState("");
+  const [filterTreatment, setFilterTreatment] = useState("");
 
   const { data: entries, isLoading } = useQuery({
     queryKey: ["/api/therapy-entries"],
@@ -34,10 +38,42 @@ export default function TherapyDiary() {
       chemotherapy: 'Химиотерапия',
       targeted: 'Таргетная терапия',
       immunotherapy: 'Иммунотерапия',
+      hormonal: 'Гормональная терапия',
       radiation: 'Лучевая терапия'
     };
     return labels[type as keyof typeof labels] || type;
   };
+
+  const getWellbeingColors = (severity: number) => {
+    if (severity <= 2) {
+      return {
+        bg: "bg-gradient-to-r from-green-50 to-emerald-50",
+        border: "border-green-100",
+        dots: "bg-gradient-to-r from-green-400 to-emerald-400",
+        text: "text-green-600"
+      };
+    } else if (severity === 3) {
+      return {
+        bg: "bg-gradient-to-r from-yellow-50 to-orange-50",
+        border: "border-yellow-100",
+        dots: "bg-gradient-to-r from-yellow-400 to-orange-400",
+        text: "text-yellow-600"
+      };
+    } else {
+      return {
+        bg: "bg-gradient-to-r from-red-50 to-pink-50",
+        border: "border-red-100",
+        dots: "bg-gradient-to-r from-red-400 to-pink-400",
+        text: "text-red-600"
+      };
+    }
+  };
+
+  const filteredEntries = entries?.filter((entry: any) => {
+    const matchesDate = !filterDate || entry.date.includes(filterDate);
+    const matchesTreatment = !filterTreatment || filterTreatment === "all" || entry.treatmentType === filterTreatment;
+    return matchesDate && matchesTreatment;
+  });
 
   return (
     <Layout currentPage="therapy">
@@ -61,6 +97,36 @@ export default function TherapyDiary() {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Filters */}
+        <Card className="bg-white rounded-2xl p-4 shadow-soft border-0 mb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex-1">
+              <Input
+                type="date"
+                placeholder="Фильтр по дате"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                className="border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
+            <div className="flex-1">
+              <Select value={filterTreatment} onValueChange={setFilterTreatment}>
+                <SelectTrigger className="border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                  <SelectValue placeholder="Вид терапии" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все виды</SelectItem>
+                  <SelectItem value="chemotherapy">Химиотерапия</SelectItem>
+                  <SelectItem value="targeted">Таргетная</SelectItem>
+                  <SelectItem value="immunotherapy">Иммунотерапия</SelectItem>
+                  <SelectItem value="hormonal">Гормональная</SelectItem>
+                  <SelectItem value="radiation">Лучевая</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </Card>
 
         {/* Recommendations */}
         {recommendations && (
@@ -108,7 +174,7 @@ export default function TherapyDiary() {
             <div className="text-center py-8">
               <div className="text-gray-500">Загрузка записей...</div>
             </div>
-          ) : !entries || entries.length === 0 ? (
+          ) : !filteredEntries || filteredEntries.length === 0 ? (
             <Card className="bg-white rounded-2xl p-8 shadow-soft border-0 text-center">
               <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Пока нет записей</h3>
@@ -127,7 +193,9 @@ export default function TherapyDiary() {
               </Dialog>
             </Card>
           ) : (
-            entries.map((entry: any) => (
+            filteredEntries.map((entry: any) => {
+              const wellbeingColors = getWellbeingColors(entry.wellbeingSeverity);
+              return (
               <Card key={entry.id} className="bg-white rounded-2xl p-6 shadow-soft border-0">
                 <div className="flex items-center justify-between mb-4">
                   <div>
@@ -138,25 +206,36 @@ export default function TherapyDiary() {
                       {getTreatmentTypeLabel(entry.treatmentType)} • Цикл {entry.cycle}, День {entry.cycleDay}
                     </p>
                   </div>
-                  <div className="text-2xl">
-                    {entry.mood || '😊'}
+                  <div className="flex items-center space-x-2">
+                    <div className="text-2xl">
+                      {entry.mood || '😊'}
+                    </div>
+                    <Button variant="ghost" size="icon" className="w-8 h-8 hover:bg-gray-100">
+                      <Edit className="w-4 h-4 text-gray-500" />
+                    </Button>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-600">Самочувствие:</span>
-                    <div className="flex space-x-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className={`w-3 h-3 rounded-full ${
-                            i < entry.wellbeingSeverity ? "bg-yellow-400" : "bg-gray-200"
-                          }`}
-                        />
-                      ))}
+                  <div className={`${wellbeingColors.bg} p-3 rounded-lg border ${wellbeingColors.border}`}>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-gray-700">Самочувствие:</span>
+                      <div className="flex space-x-1">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className={`w-4 h-4 rounded-full transition-all ${
+                              i < entry.wellbeingSeverity 
+                                ? `${wellbeingColors.dots} shadow-sm` 
+                                : "bg-gray-200"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className={`text-sm font-semibold ${wellbeingColors.text}`}>
+                        {entry.wellbeingSeverity}/5
+                      </span>
                     </div>
-                    <span className="text-sm text-gray-500">({entry.wellbeingSeverity}/5)</span>
                   </div>
 
                   {entry.medications && (
@@ -185,12 +264,39 @@ export default function TherapyDiary() {
                   {entry.physicalActivity && (
                     <div>
                       <span className="text-sm font-medium text-gray-700">Физическая активность:</span>
-                      <p className="text-sm text-gray-600">{entry.physicalActivity}</p>
+                      <p className="text-sm text-gray-600">
+                        {entry.physicalActivity === 'none' ? 'Нет' : 
+                         entry.physicalActivity === 'moderate' ? 'Умеренная' : 
+                         entry.physicalActivity === 'high' ? 'Высокая' : entry.physicalActivity}
+                        {entry.physicalActivityType && ` (${
+                          entry.physicalActivityType === 'walking' ? 'прогулка' :
+                          entry.physicalActivityType === 'running' ? 'бег' :
+                          entry.physicalActivityType === 'cycling' ? 'велосипед' :
+                          entry.physicalActivityType === 'gym' ? 'спортзал' :
+                          entry.physicalActivityType === 'swimming' ? 'плавание' :
+                          entry.physicalActivityType
+                        })`}
+                      </p>
+                    </div>
+                  )}
+
+                  {entry.comments && (
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">Комментарий:</span>
+                      <p className="text-sm text-gray-600">{entry.comments}</p>
+                    </div>
+                  )}
+
+                  {entry.reminder && (
+                    <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
+                      <span className="text-sm font-medium text-blue-800">Напоминание:</span>
+                      <p className="text-sm text-blue-700">{entry.reminder}</p>
                     </div>
                   )}
                 </div>
               </Card>
-            ))
+              );
+            })
           )}
         </div>
       </main>

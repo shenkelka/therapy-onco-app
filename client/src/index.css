@@ -1,40 +1,41 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: hsl(30, 25%, 95%);
-  --foreground: hsl(20, 14.3%, 4.1%);
-  --muted: hsl(30, 15%, 90%);
-  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --background: hsl(25, 15%, 93%); /* Warm beige like in the design */
+  --foreground: hsl(0, 0%, 15%);
+  --muted: hsl(25, 10%, 88%);
+  --muted-foreground: hsl(25, 5%, 50%);
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --popover-foreground: hsl(0, 0%, 15%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14.3%, 4.1%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(267, 57%, 50%);
+  --card-foreground: hsl(0, 0%, 15%);
+  --border: hsl(25, 10%, 85%);
+  --input: hsl(25, 10%, 85%);
+  --primary: hsl(0, 0%, 15%);
   --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(30, 15%, 90%);
-  --secondary-foreground: hsl(24, 9.8%, 10%);
-  --accent: hsl(30, 15%, 90%);
-  --accent-foreground: hsl(24, 9.8%, 10%);
-  --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(60, 9.1%, 97.8%);
-  --ring: hsl(20, 14.3%, 4.1%);
-  --radius: 1rem;
+  --secondary: hsl(25, 10%, 88%);
+  --secondary-foreground: hsl(0, 0%, 15%);
+  --accent: hsl(25, 10%, 88%);
+  --accent-foreground: hsl(0, 0%, 15%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --ring: hsl(0, 0%, 15%);
+  --radius: 1.5rem; /* Larger radius like in the design */
   
-  /* Custom therapy app colors matching exact design */
-  --warm-beige: hsl(25, 20%, 92%);
-  --soft-mint: hsl(160, 25%, 88%);
-  --soft-yellow: hsl(50, 45%, 82%);
-  --soft-blue: hsl(220, 35%, 88%);
-  --soft-pink: hsl(350, 35%, 88%);
-  --soft-purple: hsl(260, 35%, 88%);
-  --soft-orange: hsl(30, 45%, 82%);
-  --soft-green: hsl(140, 25%, 85%);
+  /* Modern colors matching the design screenshot */
+  --warm-beige: hsl(25, 15%, 93%);
+  --soft-mint: hsl(150, 50%, 85%);
+  --soft-yellow: hsl(50, 80%, 75%);
+  --soft-blue: hsl(210, 70%, 80%);
+  --soft-pink: hsl(0, 60%, 80%);
+  --soft-purple: hsl(260, 50%, 80%);
+  --soft-orange: hsl(25, 70%, 75%);
+  --soft-green: hsl(100, 40%, 70%);
+  --card-sage: hsl(100, 30%, 65%);
 }
 
 .dark {
@@ -65,7 +66,7 @@
   }
 
   body {
-    @apply font-['Montserrat',sans-serif] antialiased text-foreground;
+    @apply font-['Inter',sans-serif] antialiased text-foreground;
     background-color: var(--warm-beige);
   }
   
@@ -105,6 +106,14 @@
   }
   
   .shadow-soft {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+  
+  .shadow-card {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
+  
+  .bg-card-sage {
+    background-color: var(--card-sage);
   }
 }

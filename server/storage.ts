@@ -77,7 +77,9 @@ export class MemStorage implements IStorage {
         medications: "Доксорубицин, Циклофосфамид",
         wellbeingSeverity: 3,
         sideEffects: ["Тошнота", "Усталость"],
-        physicalActivity: "light",
+        physicalActivity: "moderate",
+        physicalActivityType: "walking",
+        comments: "Чувствую себя неплохо, принимаю противорвотные",
         mood: "😌"
       });
 
@@ -86,12 +88,59 @@ export class MemStorage implements IStorage {
         date: "2025-01-18",
         cycle: 2,
         cycleDay: 4,
-        treatmentType: "chemotherapy",
-        medications: "Доксорубицин, Циклофосфамид",
-        wellbeingSeverity: 4,
-        sideEffects: ["Выпадение волос", "Слабость"],
+        treatmentType: "hormonal",
+        medications: "Тамоксифен",
+        wellbeingSeverity: 2,
+        sideEffects: ["Приливы", "Слабость"],
         physicalActivity: "none",
-        mood: "😟"
+        comments: "Приливы мешают спать, но в целом нормально",
+        reminder: "Принять таблетку завтра в 20:00",
+        mood: "😊"
+      });
+
+      this.createTherapyEntry({
+        userId: 1,
+        date: "2025-01-17",
+        cycle: 1,
+        cycleDay: 12,
+        treatmentType: "targeted",
+        medications: "Герцептин",
+        wellbeingSeverity: 1,
+        sideEffects: [],
+        physicalActivity: "high",
+        physicalActivityType: "yoga",
+        comments: "Отличное самочувствие, хорошая переносимость",
+        mood: "😄"
+      });
+
+      this.createTherapyEntry({
+        userId: 1,
+        date: "2025-01-16",
+        cycle: 1,
+        cycleDay: 8,
+        treatmentType: "immunotherapy",
+        medications: "Пембролизумаб",
+        wellbeingSeverity: 4,
+        sideEffects: ["Усталость", "Боль"],
+        physicalActivity: "light",
+        physicalActivityType: "walking",
+        comments: "Чувствую сильную усталость после процедуры",
+        mood: "😔"
+      });
+
+      this.createTherapyEntry({
+        userId: 1,
+        date: "2025-01-15",
+        cycle: 3,
+        cycleDay: 1,
+        treatmentType: "radiation",
+        medications: "Поддерживающая терапия",
+        wellbeingSeverity: 3,
+        sideEffects: ["Покраснение кожи"],
+        physicalActivity: "moderate",
+        physicalActivityType: "swimming",
+        comments: "Кожа немного покраснела в области облучения",
+        mood: "😐"
       });
 
       // Add demo help requests
@@ -150,9 +199,14 @@ export class MemStorage implements IStorage {
   async createTherapyEntry(insertEntry: InsertTherapyEntry): Promise<TherapyEntry> {
     const id = this.currentTherapyEntryId++;
     const entry: TherapyEntry = { 
-      ...insertEntry, 
+      ...insertEntry,
       id,
+      cycle: insertEntry.cycle || null,
+      cycleDay: insertEntry.cycleDay || null,
       sideEffects: insertEntry.sideEffects || null,
+      physicalActivityType: insertEntry.physicalActivityType || null,
+      comments: insertEntry.comments || null,
+      reminder: insertEntry.reminder || null,
       mood: insertEntry.mood || null,
       createdAt: new Date()
     };

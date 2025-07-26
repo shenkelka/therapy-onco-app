@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/layout";
 import MoodSelector from "@/components/mood-selector";
+import NotificationSettings from "@/components/notification-settings";
+import NotificationTest from "@/components/notification-test";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, BookOpen, Users, Utensils, Activity } from "lucide-react";
+import { ArrowRight, BookOpen, Users, Utensils, Activity, Bell } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Home() {
@@ -13,12 +15,12 @@ export default function Home() {
 
   const { data: recentEntries } = useQuery({
     queryKey: ["/api/therapy-entries"],
-    select: (data) => data?.slice(0, 2), // Get 2 most recent entries
+    select: (data: any[]) => data?.slice(0, 2), // Get 2 most recent entries
   });
 
   const { data: helpRequests } = useQuery({
     queryKey: ["/api/help-requests"],
-    select: (data) => data?.slice(0, 2), // Get first 2 requests
+    select: (data: any[]) => data?.slice(0, 2), // Get first 2 requests
   });
 
   return (
@@ -39,21 +41,24 @@ export default function Home() {
         </div>
 
         {/* Daily Mood Check */}
-        <Card className="bg-white rounded-2xl p-6 shadow-soft mb-6 border-0">
-          <div className="text-sm text-warm-gray mb-2">Ежедневная рефлексия</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            Привет, {user?.name || "Мария"} 👋<br />
-            Как ваше самочувствие сегодня?
+        <Card className="bg-white rounded-3xl p-6 shadow-card mb-6 border-0">
+          <div className="text-sm text-gray-500 mb-2">Ежедневная рефлексия</div>
+          <h2 className="text-2xl font-medium text-gray-900 mb-4">
+            Привет, {(user as any)?.name || "Мария"} 👋<br />
+            <span className="text-xl">Как ваше самочувствие<br />сегодня?</span>
           </h2>
           
-          <div className="flex items-center justify-between mb-4">
-            <div className="text-sm text-warm-gray">Ваше настроение</div>
+          <div className="flex items-center justify-between mb-4 bg-gray-50 rounded-2xl p-3">
+            <div className="text-sm text-gray-600">Ваше настроение</div>
             <Button variant="ghost" size="icon" className="text-gray-400">
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
           
-          <MoodSelector />
+          <div className="mb-4">
+            <div className="text-sm font-medium text-gray-900 mb-3">Настроение дня</div>
+            <MoodSelector />
+          </div>
         </Card>
       </div>
 
@@ -61,10 +66,10 @@ export default function Home() {
       <main className="px-6 pb-24">
         {/* Therapy Diary Section */}
         <Link href="/therapy">
-          <Card className="bg-soft-mint rounded-2xl p-6 mb-6 shadow-soft border-0 cursor-pointer hover:shadow-md transition-shadow">
+          <Card className="bg-soft-mint rounded-3xl p-6 mb-6 shadow-card border-0 cursor-pointer hover:shadow-lg transition-all">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Дневник терапии</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Дневник терапии</h3>
                 <p className="text-sm text-gray-600">Отслеживайте самочувствие и получайте рекомендации</p>
               </div>
               <Button variant="ghost" size="icon" className="w-10 h-10 bg-white rounded-xl shadow-soft hover:scale-105 transition-transform">
@@ -125,14 +130,14 @@ export default function Home() {
 
         {/* Mutual Help Section */}
         <Link href="/help">
-          <Card className="bg-soft-yellow rounded-2xl p-6 mb-6 shadow-soft border-0 cursor-pointer hover:shadow-md transition-shadow">
+          <Card className="bg-soft-yellow rounded-3xl p-6 mb-6 shadow-card border-0 cursor-pointer hover:shadow-lg transition-all">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Взаимопомощь</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Взаимопомощь</h3>
                 <p className="text-sm text-gray-600">Мы помогаем друг другу. Получите или окажите помощь.</p>
               </div>
-              <Button variant="ghost" size="icon" className="w-10 h-10 bg-white rounded-xl shadow-soft hover:scale-105 transition-transform">
-                <ArrowRight className="w-5 h-5 text-gray-600" />
+              <Button variant="ghost" size="icon" className="text-gray-600">
+                <ArrowRight className="w-5 h-5" />
               </Button>
             </div>
 
@@ -146,7 +151,7 @@ export default function Home() {
                   </span>
                 </div>
                 <div className="space-y-2">
-                  {helpRequests.map((request) => (
+                  {helpRequests.map((request: any) => (
                     <div key={request.id} className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-soft-blue rounded-full flex items-center justify-center text-sm">
                         {request.helpType === 'walk' && '🚶'}
@@ -182,47 +187,57 @@ export default function Home() {
 
         {/* Recommended Articles Section */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Рекомендации для вас</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Рекомендации для вас</h3>
           <div className="grid grid-cols-1 gap-4">
-            <Card className="bg-soft-purple rounded-2xl p-5 shadow-soft border-0 cursor-pointer hover:shadow-md transition-shadow">
+            <Card className="bg-soft-purple rounded-3xl p-5 shadow-card border-0 cursor-pointer hover:shadow-lg transition-shadow">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-soft">
                   <BookOpen className="w-6 h-6 text-gray-600" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-base font-semibold text-gray-800 mb-1">Психология</h4>
+                  <h4 className="text-base font-medium text-gray-900 mb-1">Психология</h4>
                   <p className="text-sm text-gray-600">Как справляться с эмоциями во время лечения</p>
                 </div>
                 <ArrowRight className="w-5 h-5 text-gray-400" />
               </div>
             </Card>
 
-            <Card className="bg-soft-green rounded-2xl p-5 shadow-soft border-0 cursor-pointer hover:shadow-md transition-shadow">
+            <Card className="bg-soft-green rounded-3xl p-5 shadow-card border-0 cursor-pointer hover:shadow-lg transition-shadow">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-soft">
                   <Utensils className="w-6 h-6 text-gray-600" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-base font-semibold text-gray-800 mb-1">Питание</h4>
+                  <h4 className="text-base font-medium text-gray-900 mb-1">Питание</h4>
                   <p className="text-sm text-gray-600">Правильное питание для поддержания сил</p>
                 </div>
                 <ArrowRight className="w-5 h-5 text-gray-400" />
               </div>
             </Card>
 
-            <Card className="bg-soft-orange rounded-2xl p-5 shadow-soft border-0 cursor-pointer hover:shadow-md transition-shadow">
+            <Card className="bg-soft-orange rounded-3xl p-5 shadow-card border-0 cursor-pointer hover:shadow-lg transition-shadow">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-soft">
                   <Activity className="w-6 h-6 text-gray-600" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-base font-semibold text-gray-800 mb-1">Активность</h4>
+                  <h4 className="text-base font-medium text-gray-900 mb-1">Активность</h4>
                   <p className="text-sm text-gray-600">Безопасные упражнения во время терапии</p>
                 </div>
                 <ArrowRight className="w-5 h-5 text-gray-400" />
               </div>
             </Card>
           </div>
+        </div>
+
+        {/* Notification Settings */}
+        <div className="mb-6">
+          <NotificationSettings />
+        </div>
+
+        {/* Notification Test (for development) */}
+        <div className="mb-6">
+          <NotificationTest />
         </div>
 
       </main>

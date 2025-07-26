@@ -16,13 +16,16 @@ export const therapyEntries = pgTable("therapy_entries", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
   date: text("date").notNull(),
-  cycle: integer("cycle").notNull(),
-  cycleDay: integer("cycle_day").notNull(),
-  treatmentType: text("treatment_type").notNull(), // chemotherapy, targeted, immunotherapy, radiation
+  cycle: integer("cycle"),
+  cycleDay: integer("cycle_day"),
+  treatmentType: text("treatment_type").notNull(), // chemotherapy, targeted, immunotherapy, radiation, hormonal
   medications: text("medications").notNull(),
   wellbeingSeverity: integer("wellbeing_severity").notNull(), // 1-5 scale
   sideEffects: text("side_effects").array(),
   physicalActivity: text("physical_activity").notNull(),
+  physicalActivityType: text("physical_activity_type"), // specific type if moderate/high activity
+  comments: text("comments"), // user comments about wellbeing and supportive medications
+  reminder: text("reminder"), // reminder for next medication/injection (only for hormonal therapy)
   mood: text("mood"), // emoji representation
   createdAt: timestamp("created_at").defaultNow(),
 });

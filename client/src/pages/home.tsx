@@ -124,15 +124,8 @@ export default function Home() {
             <div className="text-sm text-gray-500 mb-2">Ежедневная рефлексия</div>
             <h2 className="text-2xl font-medium text-gray-900 mb-4">
               Привет, {(user as any)?.name || "Мария"} 👋<br />
-              <span className="text-xl">Как ваше самочувствие<br />сегодня?</span>
+              <span className="text-xl">Как вы чувствуете себя<br />сегодня?</span>
             </h2>
-            
-            <div className="flex items-center justify-between mb-4 bg-gray-50 rounded-2xl p-3">
-              <div className="text-sm text-gray-600">Ваше настроение</div>
-              <Button variant="ghost" size="icon" className="text-gray-400">
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </div>
             
             <div className="mb-4">
               <div className="text-sm font-medium text-gray-900 mb-3">Настроение дня</div>
@@ -195,14 +188,10 @@ export default function Home() {
             )}
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               <div className="bg-white rounded-xl p-3 text-center hover:shadow-md transition-shadow">
                 <div className="text-2xl mb-1">📝</div>
-                <div className="text-xs font-medium text-gray-700">Новая запись</div>
-              </div>
-              <div className="bg-white rounded-xl p-3 text-center hover:shadow-md transition-shadow">
-                <div className="text-2xl mb-1">💡</div>
-                <div className="text-xs font-medium text-gray-700">Рекомендации</div>
+                <div className="text-xs font-medium text-gray-700">Добавить запись в дневник</div>
               </div>
             </div>
           </Card>

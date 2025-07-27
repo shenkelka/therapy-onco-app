@@ -23,6 +23,7 @@ export interface IStorage {
   getTherapyEntries(userId: number): Promise<TherapyEntry[]>;
   getTherapyEntry(id: number): Promise<TherapyEntry | undefined>;
   createTherapyEntry(entry: InsertTherapyEntry): Promise<TherapyEntry>;
+  updateTherapyEntry(id: number, entry: InsertTherapyEntry): Promise<TherapyEntry | undefined>;
   
   // Help request operations
   getHelpRequests(): Promise<HelpRequest[]>;
@@ -68,6 +69,21 @@ export class MemStorage implements IStorage {
 
     // Add demo therapy entries
     setTimeout(() => {
+      this.createTherapyEntry({
+        userId: 1,
+        date: "2025-01-20",
+        cycle: 3,
+        cycleDay: 2,
+        treatmentType: "targeted",
+        medications: "Трастузумаб",
+        wellbeingSeverity: 6,
+        sideEffects: [],
+        physicalActivity: "high",
+        physicalActivityType: "gym",
+        comments: "Прекрасное самочувствие! Полно энергии, хожу в спортзал",
+        mood: "😍"
+      });
+
       this.createTherapyEntry({
         userId: 1,
         date: "2025-01-19",
@@ -212,6 +228,28 @@ export class MemStorage implements IStorage {
     };
     this.therapyEntries.set(id, entry);
     return entry;
+  }
+
+  async updateTherapyEntry(id: number, insertEntry: InsertTherapyEntry): Promise<TherapyEntry | undefined> {
+    const existingEntry = this.therapyEntries.get(id);
+    if (!existingEntry) {
+      return undefined;
+    }
+
+    const updatedEntry: TherapyEntry = { 
+      ...insertEntry,
+      id,
+      cycle: insertEntry.cycle || null,
+      cycleDay: insertEntry.cycleDay || null,
+      sideEffects: insertEntry.sideEffects || null,
+      physicalActivityType: insertEntry.physicalActivityType || null,
+      comments: insertEntry.comments || null,
+      reminder: insertEntry.reminder || null,
+      mood: insertEntry.mood || null,
+      createdAt: existingEntry.createdAt // Keep original creation date
+    };
+    this.therapyEntries.set(id, updatedEntry);
+    return updatedEntry;
   }
 
   async getHelpRequests(): Promise<HelpRequest[]> {

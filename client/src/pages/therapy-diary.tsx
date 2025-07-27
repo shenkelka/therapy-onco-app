@@ -7,13 +7,15 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Plus, Calendar, Award, Edit } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, Award, Edit, Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "wouter";
 
 export default function TherapyDiary() {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filterDate, setFilterDate] = useState("");
   const [filterTreatment, setFilterTreatment] = useState("");
+  const [editingEntry, setEditingEntry] = useState<any>(null);
 
   const { data: entries, isLoading } = useQuery({
     queryKey: ["/api/therapy-entries"],
@@ -45,14 +47,14 @@ export default function TherapyDiary() {
   };
 
   const getWellbeingColors = (severity: number) => {
-    if (severity <= 2) {
+    if (severity >= 5) {
       return {
         bg: "bg-gradient-to-r from-green-50 to-emerald-50",
         border: "border-green-100",
         dots: "bg-gradient-to-r from-green-400 to-emerald-400",
         text: "text-green-600"
       };
-    } else if (severity === 3) {
+    } else if (severity >= 3) {
       return {
         bg: "bg-gradient-to-r from-yellow-50 to-orange-50",
         border: "border-yellow-100",
@@ -67,6 +69,18 @@ export default function TherapyDiary() {
         text: "text-red-600"
       };
     }
+  };
+
+  const getWellbeingText = (severity: number) => {
+    const texts = {
+      1: "Очень плохо",
+      2: "Плохо", 
+      3: "Нормально",
+      4: "Хорошо",
+      5: "Очень хорошо",
+      6: "Отлично"
+    };
+    return texts[severity as keyof typeof texts] || "Не указано";
   };
 
   const filteredEntries = entries?.filter((entry: any) => {
@@ -96,45 +110,64 @@ export default function TherapyDiary() {
               <TherapyForm onSuccess={() => setIsFormOpen(false)} />
             </DialogContent>
           </Dialog>
+
+          {/* Edit Entry Dialog */}
+          <Dialog open={!!editingEntry} onOpenChange={() => setEditingEntry(null)}>
+            <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto p-0 border-0">
+              <TherapyForm 
+                entry={editingEntry} 
+                onSuccess={() => setEditingEntry(null)} 
+              />
+            </DialogContent>
+          </Dialog>
         </div>
 
-        {/* Filters */}
-        <Card className="bg-white rounded-2xl p-4 shadow-soft border-0 mb-6">
-          <div className="flex items-center space-x-4">
-            <div className="flex-1">
-              <Input
-                type="date"
-                placeholder="Фильтр по дате"
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
-                className="border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
-            <div className="flex-1">
-              <Select value={filterTreatment} onValueChange={setFilterTreatment}>
-                <SelectTrigger className="border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                  <SelectValue placeholder="Вид терапии" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все виды</SelectItem>
-                  <SelectItem value="chemotherapy">Химиотерапия</SelectItem>
-                  <SelectItem value="targeted">Таргетная</SelectItem>
-                  <SelectItem value="immunotherapy">Иммунотерапия</SelectItem>
-                  <SelectItem value="hormonal">Гормональная</SelectItem>
-                  <SelectItem value="radiation">Лучевая</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </Card>
+        {/* Filter Toggle - Hidden */}
+        <div className="mb-6 hidden">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="bg-white rounded-xl shadow-soft px-3 py-2 text-gray-600 hover:bg-gray-50"
+          >
+            <Filter className="w-4 h-4" />
+          </Button>
+          
+          {isFilterOpen && (
+            <Card className="bg-white rounded-2xl p-4 shadow-soft border-0 mt-3">
+              <div className="flex items-center space-x-4">
+                <div className="flex-1">
+                  <Input
+                    type="date"
+                    placeholder="Фильтр по дате"
+                    value={filterDate}
+                    onChange={(e) => setFilterDate(e.target.value)}
+                    className="border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="flex-1">
+                  <Select value={filterTreatment} onValueChange={setFilterTreatment}>
+                    <SelectTrigger className="border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                      <SelectValue placeholder="Вид терапии" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Все виды</SelectItem>
+                      <SelectItem value="chemotherapy">Химиотерапия</SelectItem>
+                      <SelectItem value="targeted">Таргетная</SelectItem>
+                      <SelectItem value="immunotherapy">Иммунотерапия</SelectItem>
+                      <SelectItem value="hormonal">Гормональная</SelectItem>
+                      <SelectItem value="radiation">Лучевая</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </Card>
+          )}
+        </div>
 
         {/* Recommendations */}
         {recommendations && (
           <Card className="bg-soft-mint rounded-2xl p-6 shadow-soft border-0 mb-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <Award className="w-5 h-5 text-gray-600" />
-              <h3 className="text-lg font-semibold text-gray-800">Рекомендации</h3>
-            </div>
             
             {recommendations.supportMessage && (
               <div className="bg-white p-4 rounded-xl border-l-4 border-emerald-400 mb-4">
@@ -168,6 +201,21 @@ export default function TherapyDiary() {
       </div>
 
       <main className="px-6 lg:px-8 xl:px-12 pb-24 lg:pb-28 xl:pb-32">
+        {/* Add Entry Button - Prominent */}
+        <div className="mb-6">
+          <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <DialogTrigger asChild>
+              <Button className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-4 rounded-xl shadow-lg flex items-center justify-center space-x-2">
+                <Plus className="w-5 h-5" />
+                <span>Добавить запись в дневник</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto p-0 border-0">
+              <TherapyForm onSuccess={() => setIsFormOpen(false)} />
+            </DialogContent>
+          </Dialog>
+        </div>
+
         {/* Entries List */}
         <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0 xl:grid-cols-3">
           {isLoading ? (
@@ -210,31 +258,39 @@ export default function TherapyDiary() {
                     <div className="text-2xl">
                       {entry.mood || '😊'}
                     </div>
-                    <Button variant="ghost" size="icon" className="w-8 h-8 hover:bg-gray-100">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="w-8 h-8 hover:bg-gray-100"
+                      onClick={() => setEditingEntry(entry)}
+                    >
                       <Edit className="w-4 h-4 text-gray-500" />
                     </Button>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <div className={`${wellbeingColors.bg} p-3 rounded-lg border ${wellbeingColors.border}`}>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-gray-700">Самочувствие:</span>
-                      <div className="flex space-x-1">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={`w-4 h-4 rounded-full transition-all ${
-                              i < entry.wellbeingSeverity 
-                                ? `${wellbeingColors.dots} shadow-sm` 
-                                : "bg-gray-200"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className={`text-sm font-semibold ${wellbeingColors.text}`}>
-                        {entry.wellbeingSeverity}/5
+                  {/* Wellbeing with scale and color */}
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Самочувствие</span>
+                      <span className={`text-sm font-semibold ${
+                        entry.wellbeingSeverity >= 5 ? 'text-green-600' :
+                        entry.wellbeingSeverity >= 3 ? 'text-yellow-600' :
+                        'text-red-600'
+                      }`}>
+                        {getWellbeingText(entry.wellbeingSeverity)}
                       </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full transition-all ${
+                          entry.wellbeingSeverity >= 5 ? 'bg-green-500' :
+                          entry.wellbeingSeverity >= 3 ? 'bg-yellow-500' :
+                          'bg-red-500'
+                        }`}
+                        style={{ width: `${(entry.wellbeingSeverity / 6) * 100}%` }}
+                      />
                     </div>
                   </div>
 

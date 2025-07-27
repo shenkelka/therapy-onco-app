@@ -20,7 +20,7 @@ export const therapyEntries = pgTable("therapy_entries", {
   cycleDay: integer("cycle_day"),
   treatmentType: text("treatment_type").notNull(), // chemotherapy, targeted, immunotherapy, radiation, hormonal
   medications: text("medications").notNull(),
-  wellbeingSeverity: integer("wellbeing_severity").notNull(), // 1-5 scale
+  wellbeingSeverity: integer("wellbeing_severity").notNull(), // 1-6 scale
   sideEffects: text("side_effects").array(),
   physicalActivity: text("physical_activity").notNull(),
   physicalActivityType: text("physical_activity_type"), // specific type if moderate/high activity

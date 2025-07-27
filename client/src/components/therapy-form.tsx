@@ -28,18 +28,32 @@ type FormData = z.infer<typeof formSchema>;
 
 interface TherapyFormProps {
   onSuccess: () => void;
+  entry?: any; // For editing existing entries
 }
 
-export default function TherapyForm({ onSuccess }: TherapyFormProps) {
-  const [selectedWellbeing, setSelectedWellbeing] = useState<number | null>(null);
-  const [sideEffects, setSideEffects] = useState<string[]>([]);
+export default function TherapyForm({ onSuccess, entry }: TherapyFormProps) {
+  const [selectedWellbeing, setSelectedWellbeing] = useState<number | null>(entry?.wellbeingSeverity || null);
+  const [sideEffects, setSideEffects] = useState<string[]>(entry?.sideEffects || []);
   const [customMedication, setCustomMedication] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: entry ? {
+      date: entry.date,
+      cycle: entry.cycle,
+      cycleDay: entry.cycleDay,
+      treatmentType: entry.treatmentType,
+      medications: entry.medications,
+      wellbeingSeverity: entry.wellbeingSeverity,
+      sideEffects: entry.sideEffects || [],
+      physicalActivity: entry.physicalActivity,
+      physicalActivityType: entry.physicalActivityType || "",
+      comments: entry.comments || "",
+      reminder: entry.reminder || "",
+      mood: entry.mood || "😊",
+    } : {
       date: new Date().toISOString().split('T')[0],
       cycle: undefined,
       cycleDay: undefined,
@@ -57,12 +71,16 @@ export default function TherapyForm({ onSuccess }: TherapyFormProps) {
 
   const createEntryMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      return await apiRequest("POST", "/api/therapy-entries", data);
+      if (entry) {
+        return await apiRequest("PUT", `/api/therapy-entries/${entry.id}`, data);
+      } else {
+        return await apiRequest("POST", "/api/therapy-entries", data);
+      }
     },
     onSuccess: async (_, data) => {
       toast({
-        title: "Запись сохранена!",
-        description: "Ваша запись о терапии успешно добавлена",
+        title: entry ? "Запись обновлена!" : "Запись сохранена!",
+        description: entry ? "Ваша запись о терапии успешно обновлена" : "Ваша запись о терапии успешно добавлена",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/therapy-entries"] });
 
@@ -264,32 +282,56 @@ export default function TherapyForm({ onSuccess }: TherapyFormProps) {
                 )}
               </div>
 
-              {/* Самочувствие */}
+              {/* Самочувствие - Improved Scale */}
               <div>
-                <Label className="text-sm font-medium text-gray-700">Самочувствие от 1 до 5</Label>
-                <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl mt-2">
-                  <span className="text-sm text-gray-500">Отлично</span>
-                  <div className="flex space-x-2">
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <Button
-                        key={rating}
-                        type="button"
-                        onClick={() => handleWellbeingSelect(rating)}
-                        className={`w-10 h-10 rounded-full transition-colors ${
-                          selectedWellbeing === rating ? "ring-2 ring-purple-500" : ""
-                        } ${
-                          rating === 1 ? "bg-green-200 hover:bg-green-300" :
-                          rating === 2 ? "bg-yellow-200 hover:bg-yellow-300" :
-                          rating === 3 ? "bg-orange-200 hover:bg-orange-300" :
-                          rating === 4 ? "bg-red-200 hover:bg-red-300" :
-                          "bg-red-300 hover:bg-red-400"
-                        }`}
-                      >
-                        {rating}
-                      </Button>
-                    ))}
+                <Label className="text-sm font-medium text-gray-700">Самочувствие от 1 до 6</Label>
+                <div className="p-4 bg-gray-50 rounded-xl mt-2">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-xs text-gray-500">Очень плохо</span>
+                    <span className="text-xs text-gray-500">Отлично</span>
                   </div>
-                  <span className="text-sm text-gray-500">Плохо</span>
+                  <div className="relative">
+                    {/* Scale Background */}
+                    <div className="w-full h-2 bg-gray-200 rounded-full relative">
+                      <div 
+                        className="h-2 bg-gradient-to-r from-red-400 via-yellow-400 to-green-400 rounded-full transition-all duration-300"
+                        style={{ width: selectedWellbeing ? `${(selectedWellbeing / 6) * 100}%` : '0%' }}
+                      />
+                    </div>
+                    {/* Scale Points */}
+                    <div className="flex justify-between mt-2">
+                      {[1, 2, 3, 4, 5, 6].map((rating) => (
+                        <button
+                          key={rating}
+                          type="button"
+                          onClick={() => handleWellbeingSelect(rating)}
+                          className={`w-8 h-8 rounded-full border-2 transition-all duration-200 flex items-center justify-center text-sm font-medium ${
+                            selectedWellbeing === rating 
+                              ? "border-purple-500 bg-purple-500 text-white shadow-lg scale-110" 
+                              : "border-gray-300 bg-white text-gray-600 hover:border-purple-300 hover:scale-105"
+                          }`}
+                        >
+                          {rating}
+                        </button>
+                      ))}
+                    </div>
+                    {selectedWellbeing && (
+                      <div className="text-center mt-3">
+                        <span className={`text-sm font-medium ${
+                          selectedWellbeing >= 5 ? "text-green-600" :
+                          selectedWellbeing >= 3 ? "text-yellow-600" :
+                          "text-red-600"
+                        }`}>
+                          {selectedWellbeing === 1 ? "Очень плохо" :
+                           selectedWellbeing === 2 ? "Плохо" :
+                           selectedWellbeing === 3 ? "Нормально" :
+                           selectedWellbeing === 4 ? "Хорошо" :
+                           selectedWellbeing === 5 ? "Очень хорошо" :
+                           "Отлично"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

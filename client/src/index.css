@@ -74,7 +74,7 @@
   }
 
   body {
-    @apply font-['Inter',sans-serif] antialiased text-foreground;
+    @apply font-['Onest',sans-serif] antialiased text-foreground;
     background-color: var(--warm-beige);
   }
   

@@ -77,7 +77,7 @@ export default function TherapyDiary() {
 
   return (
     <Layout currentPage="therapy">
-      <div className="px-6 pt-12 pb-6">
+      <div className="px-6 lg:px-8 xl:px-12 pt-6 lg:pt-8 pb-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <Link href="/">
@@ -167,9 +167,9 @@ export default function TherapyDiary() {
         )}
       </div>
 
-      <main className="px-6 pb-24">
+      <main className="px-6 lg:px-8 xl:px-12 pb-24 lg:pb-28 xl:pb-32">
         {/* Entries List */}
-        <div className="space-y-4">
+        <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0 xl:grid-cols-3">
           {isLoading ? (
             <div className="text-center py-8">
               <div className="text-gray-500">Загрузка записей...</div>

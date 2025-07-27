@@ -88,7 +88,7 @@ export default function MutualHelp() {
 
   return (
     <Layout currentPage="help">
-      <div className="px-6 pt-12 pb-6">
+      <div className="px-6 lg:px-8 xl:px-12 pt-6 lg:pt-8 pb-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <Link href="/">
@@ -137,7 +137,7 @@ export default function MutualHelp() {
         </Card>
       </div>
 
-      <main className="px-6 pb-24">
+      <main className="px-6 lg:px-8 xl:px-12 pb-24 lg:pb-28 xl:pb-32">
         {/* My Requests */}
         {myRequests && myRequests.length > 0 && (
           <div className="mb-8">
@@ -145,7 +145,7 @@ export default function MutualHelp() {
               <Heart className="w-5 h-5 mr-2 text-red-500" />
               Мои запросы
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 xl:grid-cols-3">
               {myRequests.map((request: any) => (
                 <Card key={request.id} className="bg-white rounded-2xl p-4 shadow-soft border-0">
                   <div className="flex items-start justify-between mb-2">
@@ -199,7 +199,7 @@ export default function MutualHelp() {
               </Dialog>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0 xl:grid-cols-3">
               {helpRequests.map((request: any) => (
                 <Card key={request.id} className="bg-white rounded-2xl p-4 shadow-soft border-0">
                   <div className="flex items-start justify-between mb-2">

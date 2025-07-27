@@ -7,6 +7,7 @@ This is a comprehensive therapy journal and mutual help platform built as a mobi
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Preferred design approach: Кардинально разные интерфейсы для мобильных и десктопных устройств с автоматическим переключением.
 
 ## System Architecture
 
@@ -28,10 +29,18 @@ Preferred communication style: Simple, everyday language.
 - **Data Storage**: In-memory storage implementation for development (MemStorage class)
 - **Development**: Hot module replacement with Vite middleware integration
 
-### Mobile-First Design Philosophy
-- **Responsive**: Optimized for mobile devices with max-width container
-- **Touch-Friendly**: Large touch targets and gesture-friendly interactions
-- **Bottom Navigation**: Mobile-native navigation pattern
+### Responsive Design Philosophy
+- **Mobile-First**: Optimized primarily for mobile devices (max-width: 768px)
+  - Compact layout with bottom navigation
+  - Single-column content arrangement
+  - Touch-optimized controls and spacing
+- **Desktop-Specific**: Completely different interface for larger screens (768px+)
+  - Fixed sidebar navigation with branding and quick stats
+  - Multi-column grid layouts for enhanced data display
+  - Extended dashboard with comprehensive statistics
+  - Larger content areas utilizing horizontal space
+- **Automatic Interface Switching**: Uses useIsMobile hook for seamless transitions
+- **Device-Optimized Components**: NavigationItem component adapts styling based on screen size
 - **Therapy-Focused Colors**: Warm, calming color palette with soft pastels
 
 ## Key Components
@@ -81,6 +90,7 @@ Preferred communication style: Simple, everyday language.
 - **Tailwind CSS**: Utility-first CSS framework with PostCSS
 - **Lucide React**: Icon library for consistent iconography
 - **Class Variance Authority**: Type-safe variant handling for components
+- **Adaptive Layout System**: Conditional rendering based on device detection (useIsMobile hook)
 
 ### Development and Build
 - **TypeScript**: Static typing across frontend and backend
@@ -121,11 +131,22 @@ Preferred communication style: Simple, everyday language.
 - **TanStack Query**: Superior caching and synchronization for data-heavy app
 - **Drizzle over Prisma**: Better TypeScript integration and performance
 
+## Recent Changes (January 27, 2025)
+
+### Adaptive Interface Implementation
+- **Dual Layout System**: Created completely different interfaces for mobile and desktop
+- **Mobile Layout (< 768px)**: Bottom navigation, compact cards, single-column layout
+- **Desktop Layout (≥ 768px)**: Fixed sidebar navigation, expanded dashboard, multi-column grids
+- **Component Adaptation**: NavigationItem component dynamically adjusts styling and layout
+- **Enhanced Desktop Features**: Statistics dashboard, larger content areas, comprehensive data display
+- **Seamless Switching**: Automatic interface detection and switching via useIsMobile hook
+
 ### Architecture Patterns
 - **Monorepo Structure**: Shared schemas and types between client/server
-- **Mobile-First**: Progressive enhancement from mobile to desktop
-- **Component Composition**: Radix UI primitives with custom styling
+- **Device-Specific Interfaces**: Completely different layouts for mobile vs desktop
+- **Component Composition**: Radix UI primitives with conditional styling
 - **Type Safety**: End-to-end TypeScript for better developer experience
+- **Responsive Hooks**: Custom useIsMobile hook for interface detection and switching
 
 ### Performance Optimizations
 - **Code Splitting**: Dynamic imports for route-based splitting

@@ -54,6 +54,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/therapy-entries/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertTherapyEntrySchema.parse({
+        ...req.body,
+        userId: 1, // Demo user
+      });
+      const updatedEntry = await storage.updateTherapyEntry(id, validatedData);
+      if (!updatedEntry) {
+        return res.status(404).json({ message: "Therapy entry not found" });
+      }
+      res.json(updatedEntry);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid therapy entry data", error });
+    }
+  });
+
   // Help requests endpoints
   app.get("/api/help-requests", async (req, res) => {
     try {
